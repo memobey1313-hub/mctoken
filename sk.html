@@ -52,8 +52,9 @@
   .pn.good { color:var(--money); }
   .tabs { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:2px; }
   .tab { min-height:48px; border-radius:14px; border:1px solid var(--line); background:var(--bg2); font:600 13.5px var(--sans); position:relative; padding:6px 2px; white-space:nowrap; }
-  .tab i { position:absolute; top:7px; right:9px; width:8px; height:8px; border-radius:50%; background:var(--money); }
+  .tab i { position:absolute; top:5px; right:6px; width:8px; height:8px; border-radius:50%; background:var(--money); }
   .tab small { display:block; font:500 11px var(--sans); color:var(--money); }
+  .tab small[hidden], .tab i[hidden] { display:none; }
   .sheet { position:fixed; inset:0; background:rgba(4,16,22,.72); display:flex; align-items:flex-end; justify-content:center; z-index:10; }
   .sheet[hidden] { display:none; }
   .panel { width:100%; max-width:480px; max-height:90dvh; overflow:auto; background:var(--panel); border-radius:22px 22px 0 0; padding:20px 20px max(20px, env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
@@ -78,6 +79,12 @@
   .fine { color:var(--muted); font-size:13px; line-height:1.45; margin-top:6px; }
   .pn { min-height:18px; font-size:13px; color:var(--warn); margin-top:8px; }
   .hist { margin-top:6px; }
+  .task .rw { color:var(--money); font:600 13px var(--sans); margin-top:4px; }
+  .task .two { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+  .task .two .go, .task .two .ghost { margin-top:0; }
+  .task .ghost { min-height:46px; }
+  .task.done h3 { color:var(--muted); }
+  .task .ok { margin-top:10px; color:var(--money); font:600 14px var(--sans); }
   @media (max-height:660px) { #bal { font-size:42px; } .bal { margin-top:4px; } .cta { min-height:50px; } header { min-height:34px; } .tab { min-height:42px; } #app { padding-top:max(8px, env(safe-area-inset-top)); } }
   @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 </style>
@@ -106,7 +113,7 @@
     <button class="tab" id="tUp">Yükselt<i id="dUp" hidden></i></button>
     <button class="tab" id="tWd">Çekim<i id="dWd" hidden></i></button>
     <button class="tab" id="tPack">Paket</button>
-    <button class="tab" id="tMc">MC Token<small id="mcGift" hidden>hediye</small></button>
+    <button class="tab" id="tTask">Görevler<i id="dTask" hidden></i></button>
   </nav>
 </main>
 
@@ -144,6 +151,12 @@
     </div>
     <p class="pn" id="pkNote"></p>
     <p class="fine">Bu paket kazancı artırmaz; yalnızca her gün girme zahmetini ortadan kaldırır. Paket süresince birikecek miktar, ödediğin Stars'ın değerinden düşüktür. Satın almadan önce bunu bil.</p>
+  </div>
+  <div class="panel" id="p-task" hidden>
+    <div class="ph"><h2>Görevler</h2><button class="x" data-close>Kapat</button></div>
+    <div id="taskBody"></div>
+    <p class="pn" id="taskNote"></p>
+    <p class="fine">Her görev yalnızca bir kez ödül verir. Önce görevi yap, sonra “Ödülü al”a bas.</p>
   </div>
   <div class="panel help" id="p-help" hidden>
     <div class="ph"><h2>Nasıl çalışır</h2><button class="x" data-close>Kapat</button></div>
@@ -247,7 +260,7 @@
     }
     $("dUp").hidden = !upAffordable();
     $("dWd").hidden = !(S.balance >= c.min_withdraw && !S.wd_pending && c.wd_open);
-    $("mcGift").hidden = !!S.cross;
+    $("dTask").hidden = !taskPending();
     $("hLen").textContent = lenH(S.speed_lvl); $("hRew").textContent = usd(R, true); $("hMin").textContent = c.min_withdraw;
     if (!$("sheet").hidden) renderPanels();
   }
@@ -308,7 +321,7 @@
   $("extraBtn").addEventListener("click", function () { runAd("extra"); });
 
   /* paneller */
-  var PANELS = ["p-up", "p-wd", "p-pack", "p-help"];
+  var PANELS = ["p-up", "p-wd", "p-pack", "p-task", "p-help"];
   function openPanel(id) { PANELS.forEach(function (p) { $(p).hidden = p !== id; }); $("sheet").hidden = false; renderPanels(); }
   function closePanel() { $("sheet").hidden = true; PANELS.forEach(function (p) { $(p).hidden = true; }); }
   Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) { b.addEventListener("click", closePanel); });
@@ -317,13 +330,14 @@
   $("tUp").addEventListener("click", function () { if (ready) { pnote("upNote", ""); openPanel("p-up"); } });
   $("tWd").addEventListener("click", function () { if (ready) { pnote("wdNote", ""); $("wdWallet").value = S.wallet || ""; openPanel("p-wd"); } });
   $("tPack").addEventListener("click", function () { if (ready) { pnote("pkNote", ""); openPanel("p-pack"); } });
-  $("tMc").addEventListener("click", function () { try { tg.openTelegramLink(MC_LINK); } catch (e) { window.open(MC_LINK, "_blank"); } });
+  $("tTask").addEventListener("click", function () { if (ready) { pnote("taskNote", ""); openPanel("p-task"); } });
 
   function renderPanels() {
     if (!S) return;
     if (!$("p-up").hidden) renderUp();
     if (!$("p-wd").hidden) renderWd();
     if (!$("p-pack").hidden) renderPack();
+    if (!$("p-task").hidden) renderTasks();
   }
 
   function upCard(o) {
@@ -378,6 +392,53 @@
       pnote("wdNote", m[d.res] || "İşlem yapılamadı.", d.res === "ok"); if (d.res === "ok") haptic("success");
     }).catch(function () { pnote("wdNote", "Bağlantı sorunu, tekrar dene."); renderWd(); });
   });
+
+
+  /* görevler */
+  function openLink(u) { try { tg.openTelegramLink(u); } catch (e) { window.open(u, "_blank"); } }
+  function grp(n) { return String(Math.floor(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+  var TASKS = [
+    { id: "game", title: "MC Token oyununu başlat", desc: "MC Token oyununu bir kez aç, sonra buraya dönüp ödülü al.", open: "Oyunu aç", fail: "MC Token oyunu henüz başlatılmamış görünüyor. Oyunu açıp geri gel, sonra tekrar dene.", url: function () { return MC_LINK; } },
+    { id: "chmc", title: "MC Token kanalına abone ol", desc: "MC Token duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } },
+    { id: "chsk", title: "Saat Kasası kanalına abone ol", desc: "Saat Kasası duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } }
+  ];
+  var taskBusy = false;
+  function taskList() {
+    var T = (S && S.tasks) || {}, out = [];
+    TASKS.forEach(function (d) { var t = T[d.id]; if (!t) return; if (d.id !== "game" && !t.ch) return; out.push({ d: d, t: t }); });
+    return out;
+  }
+  function taskPending() { return taskList().some(function (x) { return !x.t.done; }); }
+  function taskReward(t) { var r = "+" + usd(t.usdt, true) + " USDT"; if (Number(t.mc) > 0) r += " · +" + grp(t.mc) + " MC"; return r; }
+  var TRES = { done: "Bu görev zaten tamamlandı.", tg: "Doğrulama şu an yapılamıyor, biraz sonra tekrar dene.", off: "Bu görev şu an açık değil.", noplayer: "Oturum yenileniyor, tekrar dene.", bad: "İşlem yapılamadı." };
+  function renderTasks() {
+    var box = $("taskBody"), list = taskList();
+    while (box.firstChild) box.removeChild(box.firstChild);
+    if (!list.length) { var e = document.createElement("p"); e.className = "fine"; e.textContent = "Şu an açık görev yok."; box.appendChild(e); return; }
+    list.forEach(function (x) {
+      var d = x.d, t = x.t, c = document.createElement("div"); c.className = "card task" + (t.done ? " done" : "");
+      var h = document.createElement("h3"), a = document.createElement("div"); h.textContent = d.title; c.appendChild(h); a.className = "rw"; a.textContent = taskReward(t); c.appendChild(a);
+      var p = document.createElement("p"); p.textContent = d.desc; c.appendChild(p);
+      if (t.done) { var k = document.createElement("div"); k.className = "ok"; k.textContent = "Tamamlandı ✓"; c.appendChild(k); }
+      else {
+        var row = document.createElement("div"); row.className = "two";
+        var b1 = document.createElement("button"); b1.className = "ghost"; b1.textContent = d.open; b1.addEventListener("click", function () { openLink(d.url(t)); });
+        var b2 = document.createElement("button"); b2.className = "go"; b2.textContent = "Ödülü al"; b2.disabled = taskBusy; b2.addEventListener("click", function () { claimTask(d); });
+        row.appendChild(b1); row.appendChild(b2); c.appendChild(row);
+      }
+      box.appendChild(c);
+    });
+  }
+  function claimTask(d) {
+    if (taskBusy || !ready) return;
+    taskBusy = true; pnote("taskNote", ""); renderTasks();
+    call({ action: "task_claim", item: d.id }).then(function (r) {
+      apply(r);
+      if (r.res === "ok") { pnote("taskNote", "Ödül bakiyene eklendi ✓", true); haptic("success"); }
+      else if (r.res === "notyet") pnote("taskNote", d.fail);
+      else pnote("taskNote", TRES[r.res] || TRES.bad, r.res === "done");
+    }).catch(function () { pnote("taskNote", "Bağlantı sorunu, tekrar dene."); }).then(function () { taskBusy = false; renderTasks(); });
+  }
 
   function renderPack() {
     var c = cfg(), len = lenH(S.speed_lvl), days = c.pack_days, mx = Math.floor(days * 24 / len) * c.reward_session;
