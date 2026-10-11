@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<!-- build sk1 saat kasasi -->
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Saat Kasası</title>
+<meta name="theme-color" content="#0a2530">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src='//libtl.com/sdk.js' data-zone='12007864' data-sdk='show_12007864'></script>
+<style>
+  :root { --bg:#0a2530; --bg2:#0e303d; --panel:#113846; --line:#25505f; --tick:#2b5868; --text:#eaf3f2; --muted:#8fb1b8; --coral:#ff6b4a; --coral-d:#e5502f; --money:#3dd6a3; --warn:#ffcf66; --disp:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif; --sans:"Instrument Sans","Avenir Next","Segoe UI",Roboto,system-ui,sans-serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); }
+  body { overflow:hidden; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--money); outline-offset:2px; }
+  p, h1, h2, h3 { margin:0; }
+  #app { height:100dvh; display:flex; flex-direction:column; padding:max(14px, env(safe-area-inset-top)) 20px max(12px, env(safe-area-inset-bottom)); max-width:480px; margin:0 auto; }
+  header { display:flex; justify-content:space-between; align-items:center; min-height:40px; }
+  header h1 { font:600 20px var(--disp); letter-spacing:.01em; }
+  #helpBtn { width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--muted); font:600 16px var(--disp); }
+  .bal { margin-top:10px; }
+  .lbl { color:var(--muted); font-size:14px; }
+  .amt { display:flex; align-items:baseline; gap:10px; margin-top:2px; }
+  #bal { font:700 52px/1 var(--disp); color:var(--money); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .unit { font:600 16px var(--disp); color:var(--muted); }
+  .sub { color:var(--muted); font-size:14px; margin-top:6px; min-height:20px; font-variant-numeric:tabular-nums; }
+  .dialwrap { position:relative; flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; container-type:size; }
+  #dial { width:min(300px, 100cqw, 100cqh); height:min(300px, 100cqw, 100cqh); display:block; }
+  .t { stroke:var(--tick); stroke-linecap:round; }
+  .t.on { stroke:var(--coral); }
+  #dial.ready .t.on { stroke:var(--money); }
+  .ring { fill:none; stroke:var(--line); stroke-width:1; }
+  .dialtxt { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:4px; pointer-events:none; }
+  #dState { color:var(--muted); font-size:14px; font-size:min(14px, 5cqmin); }
+  #dTime { font:600 32px/1.05 var(--disp); font-size:min(40px, 13.5cqmin); font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  #dFoot { color:var(--muted); font-size:13px; font-size:min(13px, 4.6cqmin); font-variant-numeric:tabular-nums; }
+  .actions { display:flex; flex-direction:column; gap:10px; }
+  .cta { width:100%; min-height:56px; border:0; border-radius:16px; background:var(--coral); color:#0a2530; font:700 17px var(--disp); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:8px 16px; }
+  .cta small { font:500 13px var(--sans); opacity:.8; }
+  .cta:active:not(:disabled) { background:var(--coral-d); }
+  .cta.money { background:var(--money); }
+  .cta:disabled { background:var(--bg2); color:var(--muted); cursor:default; border:1px solid var(--line); }
+  .ghost { width:100%; min-height:46px; border-radius:14px; border:1px solid var(--line); background:transparent; font:600 15px var(--sans); }
+  .ghost:disabled { opacity:.5; cursor:default; }
+  #note { min-height:20px; font-size:13px; color:var(--muted); text-align:center; }
+  #note.bad, .pn.bad { color:var(--warn); }
+  .pn.good { color:var(--money); }
+  .tabs { display:grid; grid-template-columns:repeat(4, 1fr); gap:8px; margin-top:2px; }
+  .tab { min-height:48px; border-radius:14px; border:1px solid var(--line); background:var(--bg2); font:600 13.5px var(--sans); position:relative; padding:6px 2px; white-space:nowrap; }
+  .tab i { position:absolute; top:7px; right:9px; width:8px; height:8px; border-radius:50%; background:var(--money); }
+  .tab small { display:block; font:500 11px var(--sans); color:var(--money); }
+  .sheet { position:fixed; inset:0; background:rgba(4,16,22,.72); display:flex; align-items:flex-end; justify-content:center; z-index:10; }
+  .sheet[hidden] { display:none; }
+  .panel { width:100%; max-width:480px; max-height:90dvh; overflow:auto; background:var(--panel); border-radius:22px 22px 0 0; padding:20px 20px max(20px, env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
+  .panel[hidden] { display:none; }
+  .ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .ph h2 { font:600 22px var(--disp); }
+  .x { min-height:36px; padding:0 14px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--muted); font:600 14px var(--sans); }
+  .card { border:1px solid var(--line); border-radius:16px; padding:14px; margin-bottom:12px; background:var(--bg2); }
+  .card h3 { font:600 17px var(--disp); display:flex; justify-content:space-between; gap:8px; }
+  .card h3 span { color:var(--muted); font:500 13px var(--sans); }
+  .card p { color:var(--muted); font-size:14px; line-height:1.45; margin-top:6px; }
+  .card .go { margin-top:12px; width:100%; min-height:46px; border-radius:12px; border:0; background:var(--coral); color:#0a2530; font:700 15px var(--disp); }
+  .card .go:disabled { background:transparent; border:1px solid var(--line); color:var(--muted); cursor:default; }
+  .kv { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--line); font-size:15px; }
+  .kv:last-child { border-bottom:0; }
+  .kv b { font:600 15px var(--disp); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .help p { color:var(--text); font-size:15px; line-height:1.5; margin-bottom:12px; }
+  .help p.m { color:var(--muted); font-size:14px; }
+  input[type=text] { width:100%; min-height:46px; border-radius:12px; border:1px solid var(--line); background:var(--bg); color:var(--text); padding:0 12px; font:500 14px var(--sans); }
+  .row { display:flex; gap:8px; margin-top:8px; }
+  .row .go { margin-top:0; width:auto; padding:0 18px; }
+  .fine { color:var(--muted); font-size:13px; line-height:1.45; margin-top:6px; }
+  .pn { min-height:18px; font-size:13px; color:var(--warn); margin-top:8px; }
+  .hist { margin-top:6px; }
+  @media (max-height:660px) { #bal { font-size:42px; } .bal { margin-top:4px; } .cta { min-height:50px; } header { min-height:34px; } .tab { min-height:42px; } #app { padding-top:max(8px, env(safe-area-inset-top)); } }
+  @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
+</style>
+</head>
+<body>
+<main id="app">
+  <header>
+    <h1>Saat Kasası</h1>
+    <button id="helpBtn" aria-label="Nasıl çalışır">?</button>
+  </header>
+  <section class="bal">
+    <p class="lbl">Bakiye</p>
+    <p class="amt"><span id="bal">0.00000</span><span class="unit">USDT</span></p>
+    <p class="sub" id="sub">Bağlanıyor…</p>
+  </section>
+  <section class="dialwrap">
+    <svg id="dial" viewBox="0 0 300 300" aria-hidden="true"><circle class="ring" cx="150" cy="150" r="106"/><g id="ticks"></g></svg>
+    <div class="dialtxt"><span id="dState">&nbsp;</span><strong id="dTime">--:--:--</strong><span id="dFoot">&nbsp;</span></div>
+  </section>
+  <section class="actions">
+    <button id="mainBtn" class="cta" disabled>Bağlanıyor…</button>
+    <button id="extraBtn" class="ghost" hidden></button>
+    <p id="note" role="status"></p>
+  </section>
+  <nav class="tabs">
+    <button class="tab" id="tUp">Yükselt<i id="dUp" hidden></i></button>
+    <button class="tab" id="tWd">Çekim<i id="dWd" hidden></i></button>
+    <button class="tab" id="tPack">Paket</button>
+    <button class="tab" id="tMc">MC Token<small id="mcGift" hidden>hediye</small></button>
+  </nav>
+</main>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="panel" id="p-up" hidden>
+    <div class="ph"><h2>Yükselt</h2><button class="x" data-close>Kapat</button></div>
+    <div id="upBody"></div>
+    <p class="pn" id="upNote"></p>
+  </div>
+  <div class="panel" id="p-wd" hidden>
+    <div class="ph"><h2>Çekim</h2><button class="x" data-close>Kapat</button></div>
+    <div class="card">
+      <div class="kv"><span>Bakiye</span><b id="wdBal">0</b></div>
+      <div class="kv"><span>Alt sınır</span><b id="wdMin">0.25 USDT</b></div>
+    </div>
+    <div class="card">
+      <h3>TON cüzdan adresi</h3>
+      <p>USDT, TON ağında bu adrese gönderilir.</p>
+      <div class="row"><input type="text" id="wdWallet" placeholder="UQ… ya da EQ…" autocomplete="off" spellcheck="false"><button class="go" id="wdSave">Kaydet</button></div>
+    </div>
+    <button class="cta money" id="wdGo" disabled>Çekim talebi gönder</button>
+    <p class="pn" id="wdNote"></p>
+    <div class="hist" id="wdHist"></div>
+    <p class="fine">Talepler elle incelenir ve sırayla ödenir. Ödemeler reklam gelirinin tahsilatına bağlıdır.</p>
+  </div>
+  <div class="panel" id="p-pack" hidden>
+    <div class="ph"><h2>Paket</h2><button class="x" data-close>Kapat</button></div>
+    <div class="card">
+      <h3 id="pkTitle">Otomatik seans</h3>
+      <p id="pkDesc"></p>
+      <div class="kv" style="margin-top:8px"><span>Fiyat</span><b id="pkPrice"></b></div>
+      <div class="kv"><span>En fazla birikecek</span><b id="pkMax"></b></div>
+      <div class="kv"><span id="pkStLbl">Durum</span><b id="pkSt"></b></div>
+      <button class="go" id="pkBuy">Satın al</button>
+    </div>
+    <p class="pn" id="pkNote"></p>
+    <p class="fine">Bu paket kazancı artırmaz; yalnızca her gün girme zahmetini ortadan kaldırır. Paket süresince birikecek miktar, ödediğin Stars'ın değerinden düşüktür. Satın almadan önce bunu bil.</p>
+  </div>
+  <div class="panel help" id="p-help" hidden>
+    <div class="ph"><h2>Nasıl çalışır</h2><button class="x" data-close>Kapat</button></div>
+    <p><b>1.</b> Seansı başlat: kısa bir reklam izlersin, <span id="hLen">5</span> saatlik seans başlar.</p>
+    <p><b>2.</b> Süre dolunca Topla'ya bas, ödül USDT bakiyene yazılır.</p>
+    <p><b>3.</b> Günde birkaç kez girmen yeter. Uygulama açılırken bir giriş reklamı gösterilir.</p>
+    <p class="m">Gösterilen reklamların gelirinin yarısı sana yazılır. Bu pay ortalama reklam gelirine göre hesaplanır ve zamanla değişebilir. Seans ödülü şu an <b id="hRew">0.0027</b> USDT.</p>
+    <p class="m">Çekim: alt sınır <b id="hMin">0.25</b> USDT, TON ağında USDT olarak. Talepler elle incelenir ve sırayla ödenir; ödemeler reklam gelirinin tahsilatına bağlıdır.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var API = "https://tpzvxbymndjjojluymmn.supabase.co/functions/v1/swift-worker";
+  var AD_FN = "show_12007864";
+  var MC_LINK = "https://t.me/MCTokenOfficalbot/mctoken";
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor("#0a2530"); tg.setBackgroundColor("#0a2530"); } catch (e) {} }
+  var initData = (tg && tg.initData) || "";
+  var S = null, skew = 0, adBusy = false, ready = false, lastLit = -1, lastMode = "";
+  var $ = function (id) { return document.getElementById(id); };
+  var NS = "http://www.w3.org/2000/svg";
+
+  (function buildTicks() {
+    var g = $("ticks");
+    for (var i = 0; i < 60; i++) {
+      var a = i * 6 * Math.PI / 180, major = i % 5 === 0, r1 = major ? 118 : 124, r2 = 140;
+      var l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", (150 + Math.sin(a) * r1).toFixed(2)); l.setAttribute("y1", (150 - Math.cos(a) * r1).toFixed(2));
+      l.setAttribute("x2", (150 + Math.sin(a) * r2).toFixed(2)); l.setAttribute("y2", (150 - Math.cos(a) * r2).toFixed(2));
+      l.setAttribute("stroke-width", major ? "4" : "2.6"); l.setAttribute("class", "t");
+      g.appendChild(l);
+    }
+  })();
+  var tickEls = $("ticks").children;
+
+  function usd(n, force) { n = Number(n) || 0; return (force || n < 1) ? n.toFixed(5) : n.toFixed(4); }
+  function usd4(n) { return (Math.floor((Number(n) || 0) * 10000) / 10000).toFixed(4); }
+  function hms(ms) { ms = Math.max(0, Math.floor(ms / 1000)); var h = Math.floor(ms / 3600), m = Math.floor(ms % 3600 / 60), s = ms % 60; return (h < 10 ? "0" : "") + h + ":" + (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s; }
+  function clock(t) { var d = new Date(t); return (d.getHours() < 10 ? "0" : "") + d.getHours() + ":" + (d.getMinutes() < 10 ? "0" : "") + d.getMinutes(); }
+  function dayLeft(ms) { var h = Math.max(0, Math.floor(ms / 3600000)); return h >= 24 ? Math.floor(h / 24) + " gün " + (h % 24) + " sa" : h + " sa"; }
+  function now() { return Date.now() + skew; }
+  function note(t, bad) { var n = $("note"); n.textContent = t || ""; n.className = bad ? "bad" : ""; }
+  function pnote(id, t, good) { var n = $(id); n.textContent = t || ""; n.className = "pn " + (good ? "good" : "bad"); }
+  function haptic(k) { try { tg.HapticFeedback.notificationOccurred(k); } catch (e) {} }
+  function adFn() { return typeof window[AD_FN] === "function" ? window[AD_FN] : null; }
+  function newYmid() { return S.id + "_" + Date.now().toString(36) + (Math.random().toString(36) + "000000").slice(2, 8); }
+
+  function call(body) {
+    body.initData = initData;
+    return fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || "hata"); return d; }); });
+  }
+  var myId = 0;
+  try { myId = Number(tg.initDataUnsafe.user.id) || 0; } catch (e) {}
+  if (!myId) try { var m = /"id":(\d+)/.exec(decodeURIComponent((/user=([^&]+)/.exec(initData) || [])[1] || "")); if (m) myId = Number(m[1]); } catch (e) {}
+  function apply(d) { if (d && d.state) { S = d.state; S.id = myId; skew = S.now - Date.now(); ready = true; } render(); return d; }
+  function refresh() { return call({ action: "state" }).then(apply).catch(function () {}); }
+
+  function cfg() { return S.cfg; }
+  function lenH(lvl) { var a = cfg().speed_hours; return a[Math.min(lvl, a.length - 1)] || 5; }
+  function phase() { if (!S) return "load"; if (S.pack_active) return "pack"; if (!S.sess_start) return "idle"; return now() >= S.sess_end ? "done" : "run"; }
+  function extrasLeft() { return Math.max(0, S.ad_lvl - S.sess_extra); }
+
+  function setLit(n, cls) {
+    if (n === lastLit && cls === lastMode) return; lastLit = n; lastMode = cls;
+    for (var i = 0; i < 60; i++) tickEls[i].setAttribute("class", i < n ? "t on" : "t");
+    $("dial").setAttribute("class", cls);
+  }
+
+  function render() {
+    if (!S) return;
+    var ph = phase(), c = cfg(), R = c.reward_session, t = now();
+    $("bal").textContent = usd(S.balance);
+    var main = $("mainBtn"), ex = $("extraBtn");
+    main.className = "cta"; main.disabled = true; ex.hidden = true;
+    if (ph === "idle") {
+      $("dState").textContent = "Hazır"; $("dTime").textContent = hms(lenH(S.speed_lvl) * 3600000); $("dFoot").textContent = "seans süresi";
+      setLit(0, "");
+      main.innerHTML = "Seansı başlat<small>Kısa bir reklam izlenir</small>"; main.disabled = adBusy;
+      $("sub").textContent = "Toplam kazanılan: " + usd(S.earned) + " USDT";
+    } else if (ph === "run") {
+      var tot = S.sess_end - S.sess_start, el = Math.min(tot, t - S.sess_start), p = tot > 0 ? el / tot : 0;
+      $("dState").textContent = "Seans sürüyor"; $("dTime").textContent = hms(S.sess_end - t); $("dFoot").textContent = "bitiş " + clock(S.sess_end);
+      setLit(Math.max(1, Math.floor(p * 60)), "");
+      main.innerHTML = "Seans sürüyor<small>Süre dolunca topla</small>";
+      $("sub").textContent = "Birikiyor: +" + usd(R * p, true) + " / " + usd(R, true) + " USDT";
+      var left = extrasLeft();
+      if (S.ad_lvl > 0) { ex.hidden = false; ex.disabled = adBusy || left <= 0; ex.textContent = left > 0 ? "Ekstra reklam izle (+" + usd(c.reward_extra, true) + ") · kalan " + left + "/" + S.ad_lvl : "Bu seanstaki ekstra reklamlar bitti"; }
+    } else if (ph === "done") {
+      $("dState").textContent = "Süre doldu"; $("dTime").textContent = "00:00:00"; $("dFoot").textContent = "toplanmayı bekliyor";
+      setLit(60, "ready");
+      main.className = "cta money"; main.innerHTML = "Topla<small>+" + usd(R, true) + " USDT</small>"; main.disabled = adBusy;
+      $("sub").textContent = "Toplanmayı bekleyen: " + usd(R, true) + " USDT";
+    } else if (ph === "pack") {
+      var len = lenH(S.speed_lvl) * 3600000, last = S.pack_last || t, pr = Math.min(1, Math.max(0, (t - last) / len));
+      $("dState").textContent = "Otomatik seans"; $("dTime").textContent = hms(len - (t - last)); $("dFoot").textContent = "paket bitişine " + dayLeft(S.pack_until - t);
+      setLit(Math.floor(pr * 60), "");
+      main.innerHTML = "Paket açık<small>Seansların kendiliğinden yenilenir</small>";
+      $("sub").textContent = "Her " + lenH(S.speed_lvl) + " saatte +" + usd(R, true) + " USDT";
+    }
+    $("dUp").hidden = !upAffordable();
+    $("dWd").hidden = !(S.balance >= c.min_withdraw && !S.wd_pending && c.wd_open);
+    $("mcGift").hidden = !!S.cross;
+    $("hLen").textContent = lenH(S.speed_lvl); $("hRew").textContent = usd(R, true); $("hMin").textContent = c.min_withdraw;
+    if (!$("sheet").hidden) renderPanels();
+  }
+  function upAffordable() {
+    var c = cfg();
+    return (S.ad_lvl < c.ad_prices.length && S.ad_lvl < 3 && S.balance >= c.ad_prices[S.ad_lvl]) || (S.speed_lvl < c.speed_prices.length && S.speed_lvl < 2 && S.balance >= c.speed_prices[S.speed_lvl]);
+  }
+
+  var RES = { running: "Seans zaten sürüyor.", claim_first: "Önce biten seansı topla.", pack: "Otomatik seans paketin açık.", nosess: "Ekstra reklam için bir seans sürmeli.", full: "Bu seanstaki ekstra reklamlar bitti.", noplayer: "Oturum yenileniyor, tekrar dene.", bad: "İşlem yapılamadı." };
+
+  function pollFor(cond, okMsg, failMsg) {
+    var times = [2500, 6000, 11000, 18000], done = false;
+    times.forEach(function (ms, i) {
+      setTimeout(function () {
+        if (done) return;
+        refresh().then(function () {
+          if (done || !S) return;
+          if (cond()) { done = true; note(okMsg); haptic("success"); setTimeout(function () { note(""); }, 4000); }
+          else if (i === times.length - 1) { note(failMsg, true); setTimeout(function () { note(""); }, 9000); }
+        });
+      }, ms);
+    });
+  }
+
+  function runAd(kind) {
+    if (adBusy || !ready) return;
+    var show = adFn();
+    if (!show) { note("Reklam servisi yüklenemedi, sonra tekrar dene.", true); return; }
+    adBusy = true; render(); note("Reklam hazırlanıyor…");
+    var ymid = newYmid(), startedBefore = S.sess_start, extraBefore = S.sess_extra;
+    call({ action: "ad_start", item: kind }).then(function (d) {
+      apply(d);
+      if (d.res !== "ok") throw new Error(d.res);
+      return show({ ymid: ymid });
+    }).then(function () {
+      note("Ödül birkaç saniye içinde işlenir…");
+      if (kind === "start") pollFor(function () { return !!S.sess_start && S.sess_start !== startedBefore; }, "Seans başladı ✓", "Seans henüz başlamadı. Birkaç dakika içinde başlamazsa reklamı tekrar izle.");
+      else pollFor(function () { return S.sess_extra > extraBefore; }, "Ekstra ödül eklendi ✓", "Ödül henüz görünmüyor. Birkaç dakika içinde gelmezse tekrar dene.");
+    }).catch(function (e) {
+      note(RES[e && e.message] || "Reklam tamamlanmadı ya da şu an gösterilecek reklam yok. Biraz sonra tekrar dene.", true);
+      refresh();
+    }).then(function () { adBusy = false; render(); });
+  }
+
+  $("mainBtn").addEventListener("click", function () {
+    if (!ready) return;
+    var ph = phase();
+    if (ph === "idle") runAd("start");
+    else if (ph === "done") {
+      adBusy = true; render();
+      call({ action: "claim" }).then(function (d) {
+        apply(d);
+        if (d.res === "ok") { note("Toplandı ✓"); haptic("success"); setTimeout(function () { note(""); }, 3500); }
+        else note(d.res === "early" ? "Süre henüz dolmadı." : "Toplanacak bir şey yok.", true);
+      }).catch(function () { note("Bağlantı sorunu, tekrar dene.", true); }).then(function () { adBusy = false; render(); });
+    }
+  });
+  $("extraBtn").addEventListener("click", function () { runAd("extra"); });
+
+  /* paneller */
+  var PANELS = ["p-up", "p-wd", "p-pack", "p-help"];
+  function openPanel(id) { PANELS.forEach(function (p) { $(p).hidden = p !== id; }); $("sheet").hidden = false; renderPanels(); }
+  function closePanel() { $("sheet").hidden = true; PANELS.forEach(function (p) { $(p).hidden = true; }); }
+  Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) { b.addEventListener("click", closePanel); });
+  $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closePanel(); });
+  $("helpBtn").addEventListener("click", function () { if (ready) openPanel("p-help"); });
+  $("tUp").addEventListener("click", function () { if (ready) { pnote("upNote", ""); openPanel("p-up"); } });
+  $("tWd").addEventListener("click", function () { if (ready) { pnote("wdNote", ""); $("wdWallet").value = S.wallet || ""; openPanel("p-wd"); } });
+  $("tPack").addEventListener("click", function () { if (ready) { pnote("pkNote", ""); openPanel("p-pack"); } });
+  $("tMc").addEventListener("click", function () { try { tg.openTelegramLink(MC_LINK); } catch (e) { window.open(MC_LINK, "_blank"); } });
+
+  function renderPanels() {
+    if (!S) return;
+    if (!$("p-up").hidden) renderUp();
+    if (!$("p-wd").hidden) renderWd();
+    if (!$("p-pack").hidden) renderPack();
+  }
+
+  function upCard(o) {
+    var d = document.createElement("div"); d.className = "card";
+    var h = document.createElement("h3"); var a = document.createElement("div"); a.textContent = o.title; var s = document.createElement("span"); s.textContent = o.level; h.appendChild(a); h.appendChild(s); d.appendChild(h);
+    var p = document.createElement("p"); p.textContent = o.desc; d.appendChild(p);
+    if (o.extra) { var p2 = document.createElement("p"); p2.textContent = o.extra; d.appendChild(p2); }
+    var b = document.createElement("button"); b.className = "go";
+    if (o.price == null) { b.textContent = "En üst seviye"; b.disabled = true; }
+    else { b.textContent = usd(o.price, true) + " USDT ile yükselt"; b.disabled = S.balance < o.price; b.addEventListener("click", function () { buy(o.item); }); }
+    d.appendChild(b); return d;
+  }
+  function renderUp() {
+    var c = cfg(), body = $("upBody"); body.textContent = "";
+    var adP = S.ad_lvl < c.ad_prices.length && S.ad_lvl < 3 ? c.ad_prices[S.ad_lvl] : null;
+    var spP = S.speed_lvl < c.speed_prices.length && S.speed_lvl < 2 ? c.speed_prices[S.speed_lvl] : null;
+    var back = adP ? Math.ceil(adP / (c.reward_extra * 2)) : 0;
+    body.appendChild(upCard({ item: "ad", title: "Ek reklam", level: "Seviye " + S.ad_lvl + " / 3", desc: "Her seansta " + (S.ad_lvl + 1 > 3 ? 3 : S.ad_lvl + 1) + " ekstra reklam izleyebilirsin. Her ekstra reklam " + usd(c.reward_extra, true) + " USDT yazar.", extra: adP ? "Günde 2 seans yapıp her ekstra reklamı izlersen harcadığın tutar yaklaşık " + back + " günde geri döner." : "", price: adP }));
+    var cur = lenH(S.speed_lvl), nxt = lenH(Math.min(S.speed_lvl + 1, 2));
+    body.appendChild(upCard({ item: "speed", title: "Kısa seans", level: "Seviye " + S.speed_lvl + " / 2", desc: spP ? "Seans süresi " + cur + " saatten " + nxt + " saate iner. Seans başına ödülü artırmaz, yalnızca günde daha çok seans başlatmana izin verir." : "Seans süren " + cur + " saat.", price: spP }));
+  }
+  function buy(item) {
+    call({ action: "upgrade", item: item }).then(function (d) {
+      apply(d);
+      pnote("upNote", d.res === "ok" ? "Yükseltme tamam ✓" : d.res === "balance" ? "Bakiyen yetmiyor." : d.res === "max" ? "Zaten en üst seviyede." : "İşlem yapılamadı.", d.res === "ok");
+      if (d.res === "ok") haptic("success");
+    }).catch(function () { pnote("upNote", "Bağlantı sorunu, tekrar dene."); });
+  }
+
+  function renderWd() {
+    var c = cfg(); $("wdBal").textContent = usd4(S.balance) + " USDT"; $("wdMin").textContent = c.min_withdraw + " USDT";
+    $("wdGo").disabled = !(c.wd_open && S.wallet && !S.wd_pending && S.balance >= c.min_withdraw);
+    $("wdGo").innerHTML = S.wd_pending ? "Bekleyen talebin var" : "Çekim talebi gönder<small>" + usd4(S.balance) + " USDT</small>";
+    var h = $("wdHist"); h.textContent = "";
+    S.wd.forEach(function (w) {
+      var r = document.createElement("div"); r.className = "kv";
+      var a = document.createElement("span"); a.textContent = new Date(w.at).toLocaleDateString("tr-TR") + " · " + ({ pending: "bekliyor", paid: "ödendi", rejected: "reddedildi" }[w.status] || w.status);
+      var b = document.createElement("b"); b.textContent = Number(w.amount).toFixed(4) + " USDT";
+      r.appendChild(a); r.appendChild(b); h.appendChild(r);
+    });
+  }
+  $("wdSave").addEventListener("click", function () {
+    call({ action: "wallet_set", wallet: $("wdWallet").value.trim() }).then(function (d) {
+      apply(d); pnote("wdNote", d.res === "ok" ? "Cüzdan kaydedildi ✓" : d.res === "bad_wallet" ? "Adres geçersiz. UQ ya da EQ ile başlayan TON adresini yaz." : d.res === "pending" ? "Bekleyen talep varken adres değişmez." : "İşlem yapılamadı.", d.res === "ok");
+    }).catch(function () { pnote("wdNote", "Bağlantı sorunu, tekrar dene."); });
+  });
+  $("wdGo").addEventListener("click", function () {
+    $("wdGo").disabled = true;
+    call({ action: "wd_request" }).then(function (d) {
+      apply(d);
+      var m = { ok: "Talebin alındı. Elle incelenir ve sırayla ödenir.", min: "Bakiyen alt sınırın altında.", no_wallet: "Önce cüzdan adresini kaydet.", pending: "Zaten bekleyen bir talebin var.", closed: "Çekimler şu an kapalı." };
+      pnote("wdNote", m[d.res] || "İşlem yapılamadı.", d.res === "ok"); if (d.res === "ok") haptic("success");
+    }).catch(function () { pnote("wdNote", "Bağlantı sorunu, tekrar dene."); renderWd(); });
+  });
+
+  function renderPack() {
+    var c = cfg(), len = lenH(S.speed_lvl), days = c.pack_days, mx = Math.floor(days * 24 / len) * c.reward_session;
+    $("pkTitle").textContent = days + " gün otomatik seans";
+    $("pkDesc").textContent = days + " gün boyunca seansların kendiliğinden yenilenir; her gün girmen, reklam izlemen gerekmez.";
+    $("pkPrice").textContent = c.pack_stars + " ⭐"; $("pkMax").textContent = "≈ " + usd(mx, true) + " USDT";
+    $("pkStLbl").textContent = S.pack_active ? "Kalan süre" : "Durum"; $("pkSt").textContent = S.pack_active ? dayLeft(S.pack_until - now()) : "Kapalı";
+    $("pkBuy").textContent = S.pack_active ? "Süreyi uzat" : "Satın al";
+  }
+  $("pkBuy").addEventListener("click", function () {
+    $("pkBuy").disabled = true; pnote("pkNote", "");
+    call({ action: "star_invoice" }).then(function (d) {
+      apply(d);
+      if (!d.invoice) { pnote("pkNote", "Şu an satın alım açılamadı. Biraz sonra tekrar dene."); return; }
+      if (tg && tg.openInvoice) tg.openInvoice(d.invoice, function (st) {
+        if (st === "paid") { pnote("pkNote", "Ödeme alındı, paket birkaç saniye içinde açılır.", true); [2000, 5000, 10000].forEach(function (ms) { setTimeout(refresh, ms); }); haptic("success"); }
+        else if (st === "failed") pnote("pkNote", "Ödeme tamamlanamadı.");
+      });
+      else if (tg && tg.openTelegramLink) tg.openTelegramLink(d.invoice);
+    }).catch(function () { pnote("pkNote", "Bağlantı sorunu, tekrar dene."); }).then(function () { $("pkBuy").disabled = false; });
+  });
+
+  setInterval(function () { if (S && !document.hidden) render(); }, 1000);
+  setInterval(function () { if (S && S.pack_active && !document.hidden) refresh(); }, 60000);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && ready) refresh(); });
+
+  /* açılış */
+  if (!initData) { $("sub").textContent = "Bu sayfa Telegram içinde açılır."; $("mainBtn").textContent = "Telegram'da aç"; }
+  else {
+    call({ action: "open" }).then(apply).then(function () {
+      var f = adFn();
+      if (f) { try { var pr = f({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 3, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
+    }).catch(function () { $("sub").textContent = "Bağlantı kurulamadı. Uygulamayı kapatıp yeniden aç."; $("mainBtn").textContent = "Bağlantı yok"; });
+  }
+})();
+</script>
+</body>
+</html>
