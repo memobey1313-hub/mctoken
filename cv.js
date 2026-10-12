@@ -1,7 +1,7 @@
 /* Civciv Uçuşu: uygulama */
 (function () {
   var API = "https://tpzvxbymndjjojluymmn.supabase.co/functions/v1/dynamic-task";
-  var ZONE = String(window.CV_ZONE || "").replace(/[^0-9]/g, ""), AD_FN = "show_" + ZONE, AD3 = "rew";
+  var ZONE = String(window.CV_ZONE || "").replace(/[^0-9]/g, ""), AD_FN = "show_" + ZONE, AD3 = "rew", AD_EVERY = 2;
   var tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor("#7fd0e6"); tg.setBackgroundColor("#7fd0e6"); if (tg.disableVerticalSwipes) tg.disableVerticalSwipes(); } catch (e) {} }
   var initData = (tg && tg.initData) || "";
@@ -14,7 +14,6 @@
   function usd(n) { return (Math.floor((Number(n) || 0) * 10000) / 10000).toFixed(4); }
   function haptic(k) { try { if (k === "light") tg.HapticFeedback.impactOccurred("light"); else tg.HapticFeedback.notificationOccurred(k); } catch (e) {} }
   function adFn() { return ZONE && typeof window[AD_FN] === "function" ? window[AD_FN] : null; }
-  function whenAd(cb, n) { var f = adFn(); if (f) return cb(f); if (!ZONE || (n || 0) > 20) return; setTimeout(function () { whenAd(cb, (n || 0) + 1); }, 300); }
   if (ZONE) { var sd = document.createElement("script"); sd.src = "https://libtl.com/sdk.js"; sd.setAttribute("data-zone", ZONE); sd.setAttribute("data-sdk", AD_FN); document.head.appendChild(sd); }
 
   function size() {
@@ -70,7 +69,7 @@
       var d = []; for (var i = 0; i < tp.length; i++) d.push(i ? tp[i] - tp[i - 1] : tp[i]);
       pay = { run: mine.id, frames: frames, taps: d };
       submit(0);
-      if (deaths % 3 === 0) setTimeout(showAd, 900);
+      if (deaths % AD_EVERY === 0) setTimeout(showAd, 900);
     }, 750);
   }
 
@@ -181,8 +180,6 @@
     upd();
     call({ action: "open" }).then(function (d) {
       apply(d); startRun();
-      whenAd(function (f) { try { var pr = f({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 3, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} });
     }).catch(function () { offline = true; upd(); setTimeout(function () { location.reload(); }, 4000); });
   }
 })();
-      
