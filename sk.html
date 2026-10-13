@@ -172,7 +172,7 @@
 (function () {
   var API = "https://tpzvxbymndjjojluymmn.supabase.co/functions/v1/swift-worker";
   var AD_FN = "show_12007864";
-  var MC_LINK = "https://t.me/MCTokenOfficalbot/mctoken";
+  var MC_LINK = "https://t.me/MCTokenOfficalbot/mctoken"; var CV_LINK = "https://t.me/CivcivUcusuBot/oyna";
   var tg = window.Telegram && window.Telegram.WebApp;
   if (tg) { try { tg.ready(); tg.expand(); tg.setHeaderColor("#0a2530"); tg.setBackgroundColor("#0a2530"); } catch (e) {} }
   var initData = (tg && tg.initData) || "";
@@ -399,13 +399,15 @@
   function grp(n) { return String(Math.floor(Number(n) || 0)).replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
   var TASKS = [
     { id: "game", title: "MC Token oyununu başlat", desc: "MC Token oyununu bir kez aç, sonra buraya dönüp ödülü al.", open: "Oyunu aç", fail: "MC Token oyunu henüz başlatılmamış görünüyor. Oyunu açıp geri gel, sonra tekrar dene.", url: function () { return MC_LINK; } },
+    { id: "cv", title: "Civciv Uçuşu oyununu başlat", desc: "Civciv Uçuşu oyununu bir kez aç, sonra buraya dönüp ödülü al.", open: "Oyunu aç", fail: "Civciv Uçuşu henüz başlatılmamış görünüyor. Oyunu açıp geri gel, sonra tekrar dene.", url: function () { return CV_LINK; } },
     { id: "chmc", title: "MC Token kanalına abone ol", desc: "MC Token duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } },
-    { id: "chsk", title: "Saat Kasası kanalına abone ol", desc: "Saat Kasası duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } }
+    { id: "chsk", title: "Saat Kasası kanalına abone ol", desc: "Saat Kasası duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } },
+    { id: "chcv", title: "Civciv Uçuşu kanalına abone ol", desc: "Civciv Uçuşu duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala abone olduğun görünmüyor. Abone olup tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } }
   ];
   var taskBusy = false;
   function taskList() {
     var T = (S && S.tasks) || {}, out = [];
-    TASKS.forEach(function (d) { var t = T[d.id]; if (!t) return; if (d.id !== "game" && !t.ch) return; out.push({ d: d, t: t }); });
+    TASKS.forEach(function (d) { var t = T[d.id]; if (!t) return; if (d.id !== "game" && d.id !== "cv" && !t.ch) return; out.push({ d: d, t: t }); });
     return out;
   }
   function taskPending() { return taskList().some(function (x) { return !x.t.done; }); }
