@@ -7,7 +7,7 @@
   var initData = (tg && tg.initData) || "";
   var $ = function (id) { return document.getElementById(id); };
   var cv = $("cv"), ctx = cv.getContext("2d");
-  var S = null, sim = null, idle = CV.make(777), run = null, taps = [], pend = false, mode = "boot", deaths = 0, adBusy = false, card = false, sheet = false;
+  var S = null, sim = null, idle = CV.make(777), run = null, taps = [], pend = false, mode = "boot", deaths = 0, adBusy = false, card = false, sheet = false, menuOpen = false;
   var fx = [], flash = 0, shake = 0, fl = 0, dead = null, scroll = 0, lastT = 0, acc = 0, pay = null, offline = false;
   var NS = "tr-TR";
   function fmt(n) { return (Number(n) || 0).toLocaleString(NS); }
@@ -47,13 +47,18 @@
     }).catch(function () { offline = true; upd(); setTimeout(startRun, 3000); });
   }
 
+  function setMenu(on) { menuOpen = !!on; $("menu").hidden = !menuOpen; $("setBtn").setAttribute("aria-expanded", menuOpen ? "true" : "false"); }
   function tap() {
+    if (menuOpen) { setMenu(false); return; }
     if (card || sheet) return;
     if (mode === "ready") { mode = "play"; lastT = 0; acc = 0; pend = true; upd(); }
     else if (mode === "play") pend = true;
   }
   $("stage").addEventListener("pointerdown", function (e) { if (e.target.closest && e.target.closest("button, input")) return; e.preventDefault(); tap(); });
-  document.addEventListener("keydown", function (e) { if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); if (!e.repeat) tap(); } });
+  document.addEventListener("keydown", function (e) { if (e.code === "Escape") setMenu(false); else if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); if (!e.repeat) tap(); } });
+  /* oyun sırasında üst çubuğa dokunmak da zıplatır, menü açılmaz */
+  $("hud").addEventListener("pointerdown", function (e) { if (mode === "play") { e.preventDefault(); tap(); } });
+  document.addEventListener("pointerdown", function (e) { if (menuOpen && !(e.target.closest && e.target.closest("#menu, #setBtn"))) setMenu(false); });
 
   function coinFx() {
     fx.push({ x: CV.BX + 14, y: sim.y - 18, a: 0 }); haptic("light");
@@ -131,13 +136,15 @@
     var h = ""; (S.wd || []).forEach(function (w) { var d = new Date(w.at); h += "<div><span>" + ("0" + d.getDate()).slice(-2) + "." + ("0" + (d.getMonth() + 1)).slice(-2) + "  " + usd(w.amount) + " USDT</span><span>" + (SD[w.status] || w.status) + "</span></div>"; });
     $("wList").innerHTML = h;
   }
-  function openPanel(id) { sheet = true; $("sheet").hidden = false; $("p-wd").hidden = id !== "p-wd"; $("p-help").hidden = id !== "p-help"; pnote(""); renderWallet(); }
+  var PANELS = ["p-wd", "p-tasks", "p-rank", "p-help"];
+  function openPanel(id) { setMenu(false); sheet = true; $("sheet").hidden = false; PANELS.forEach(function (p) { $(p).hidden = p !== id; }); pnote(""); renderWallet(); }
   function closePanel() { sheet = false; $("sheet").hidden = true; }
   Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) { b.addEventListener("click", closePanel); });
   $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closePanel(); });
-  $("walBtn").addEventListener("click", function () { if (S) openPanel("p-wd"); });
+  $("setBtn").addEventListener("click", function () { if (mode !== "play") setMenu(!menuOpen); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-open]"), function (b) { b.addEventListener("click", function () { var id = b.getAttribute("data-open"); if (id === "p-wd" && !S) { setMenu(false); return; } openPanel(id); }); });
   $("toWallet").addEventListener("click", function () { if (S) openPanel("p-wd"); });
-  $("helpBtn").addEventListener("click", function () { openPanel("p-help"); });
+  $("helpBtn").addEventListener("click", function () { if (mode !== "play") openPanel("p-help"); });
   $("wSave").addEventListener("click", function () {
     var w = $("wIn").value.trim(); $("wSave").disabled = true;
     call({ action: "wallet_set", wallet: w }).then(function (d) { apply(d); pnote(RW[d.res] || RW.noplayer, d.res === "ok"); }).catch(function () { pnote("Bağlantı sorunu, tekrar dene."); }).then(function () { if (S) renderWallet(); });
@@ -183,3 +190,4 @@
     }).catch(function () { offline = true; upd(); setTimeout(function () { location.reload(); }, 4000); });
   }
 })();
+      
