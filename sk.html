@@ -22,7 +22,10 @@
   #app { height:100dvh; display:flex; flex-direction:column; padding:max(14px, env(safe-area-inset-top)) 20px max(12px, env(safe-area-inset-bottom)); max-width:480px; margin:0 auto; }
   header { display:flex; justify-content:space-between; align-items:center; min-height:40px; }
   header h1 { font:600 20px var(--disp); letter-spacing:.01em; }
-  #helpBtn { width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--muted); font:600 16px var(--disp); }
+  .hb { display:flex; gap:8px; }
+  #helpBtn, #sndBtn { width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:transparent; color:var(--muted); font:600 16px var(--disp); padding:0; display:flex; align-items:center; justify-content:center; }
+  #sndBtn svg { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+  #sndBtn.on { color:var(--money); border-color:var(--money); }
   .bal { margin-top:10px; }
   .lbl { color:var(--muted); font-size:14px; }
   .amt { display:flex; align-items:baseline; gap:10px; margin-top:2px; }
@@ -93,7 +96,7 @@
 <main id="app">
   <header>
     <h1>Saat Kasası</h1>
-    <button id="helpBtn" aria-label="Nasıl çalışır">?</button>
+    <div class="hb"><button id="sndBtn" aria-label="Ses: açık" aria-pressed="true"></button><button id="helpBtn" aria-label="Nasıl çalışır">?</button></div>
   </header>
   <section class="bal">
     <p class="lbl">Bakiye</p>
@@ -257,7 +260,7 @@
       setLit(Math.floor(pr * 60), "");
       main.innerHTML = "Paket açık<small>Seansların kendiliğinden yenilenir</small>";
       $("sub").textContent = "Her " + lenH(S.speed_lvl) + " saatte +" + usd(R, true) + " USDT";
-    }
+          }
     $("dUp").hidden = !upAffordable();
     $("dWd").hidden = !(S.balance >= c.min_withdraw && !S.wd_pending && c.wd_open);
     $("dTask").hidden = !taskPending();
@@ -467,6 +470,56 @@
   setInterval(function () { if (S && S.pack_active && !document.hidden) refresh(); }, 60000);
   document.addEventListener("visibilitychange", function () { if (!document.hidden && ready) refresh(); });
 
+  /* ses: vantilatör uğultusu */
+  var SN = { on: true, ctx: null, out: null, up: false, fade: 0 };
+  try { if (localStorage.getItem("sk_sound") === "0") SN.on = false; } catch (e) {}
+  function fanBuild(c, dest) {
+    var n = c.sampleRate * 2, buf = c.createBuffer(1, n, c.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    var src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+    var hp = c.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 110;
+    var lp = c.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900; lp.Q.value = .6;
+    var amp = c.createGain(); amp.gain.value = .3;
+    var lfo = c.createOscillator(); lfo.frequency.value = 1.7;
+    var ld = c.createGain(); ld.gain.value = .05;
+    lfo.connect(ld); ld.connect(amp.gain);
+    src.connect(hp); hp.connect(lp); lp.connect(amp); amp.connect(dest);
+    var m1 = c.createOscillator(); m1.type = "sine"; m1.frequency.value = 96;
+    var m2 = c.createOscillator(); m2.type = "sine"; m2.frequency.value = 192.7;
+    var mg = c.createGain(); mg.gain.value = .012;
+    m1.connect(mg); m2.connect(mg); mg.connect(dest);
+    src.start(); lfo.start(); m1.start(); m2.start();
+  }
+  function soundKick() {
+    if (!SN.on || SN.ctx) return;
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      var c = new AC(); SN.ctx = c; SN.out = c.createGain(); SN.out.gain.value = 0; SN.out.connect(c.destination);
+      fanBuild(c, SN.out);
+    } catch (e) { SN.on = false; }
+  }
+  ["pointerup", "click", "keydown"].forEach(function (ev) { document.addEventListener(ev, soundKick, true); });
+  setInterval(function () {
+    var c = SN.ctx; if (!c) return;
+    try {
+      var want = SN.on && !adBusy && !document.hidden;
+      if (want) {
+        clearTimeout(SN.fade); SN.fade = 0;
+        if (!SN.up || c.state !== "running") { SN.up = true; c.resume(); SN.out.gain.setTargetAtTime(1, c.currentTime, .6); }
+      } else if (SN.up && !SN.fade) {
+        SN.out.gain.setTargetAtTime(0, c.currentTime, .12);
+        SN.fade = setTimeout(function () { SN.fade = 0; SN.up = false; try { c.suspend(); } catch (e) {} }, 500);
+      }
+    } catch (e) {}
+  }, 250);
+  var sb = $("sndBtn");
+  function sndUI() {
+    sb.className = SN.on ? "on" : ""; sb.setAttribute("aria-pressed", SN.on ? "true" : "false"); sb.setAttribute("aria-label", SN.on ? "Ses: açık" : "Ses: kapalı");
+    sb.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 9v6h3l5 4V5L8 9z"/>' + (SN.on ? '<path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' : '<path d="M17 9.5l5 5M22 9.5l-5 5"/>') + "</svg>";
+  }
+  sb.addEventListener("click", function () { SN.on = !SN.on; try { localStorage.setItem("sk_sound", SN.on ? "1" : "0"); } catch (e) {} sndUI(); if (SN.on) soundKick(); });
+  sndUI();
+
   /* açılış */
   if (!initData) { $("sub").textContent = "Bu sayfa Telegram içinde açılır."; $("mainBtn").textContent = "Telegram'da aç"; }
   else {
@@ -479,3 +532,4 @@
 </script>
 </body>
 </html>
+  
