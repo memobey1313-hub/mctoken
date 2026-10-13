@@ -64,6 +64,10 @@ p, h1, h2 { margin:0; }
 .panel input { width:100%; border:2px solid #b5cbd2; border-radius:14px; padding:9px 12px; font:600 16px system-ui, sans-serif; background:#fff; -webkit-user-select:text; user-select:text; }
 .panel input:focus { outline:3px solid var(--chick); border-color:var(--chick-d); }
 .panel .btn { margin-top:12px; }
+.rfs { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 2px; }
+.rfs div { background:#fff; border:2px solid #e2ecef; border-radius:14px; padding:8px 10px; text-align:center; }
+.rfs b { display:block; font-weight:800; font-size:24px; }
+.rfs span { font-weight:700; font-size:14px; color:var(--muted); }
 .pn { min-height:22px; margin-top:10px; font-weight:600; font-size:16px; }
 .pn.good { color:var(--ok); } .pn.bad { color:var(--bad); }
 .wl { margin-top:10px; font-weight:600; font-size:16px; color:var(--muted); }
@@ -93,6 +97,7 @@ p, h1, h2 { margin:0; }
     <div id="menu" role="menu" hidden>
       <button class="mi" role="menuitem" data-open="p-wd"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="3.5"/><path d="M3 10.5h18"/><circle cx="16.5" cy="15" r="1.3"/></svg>Cüzdan</button>
       <button class="mi" role="menuitem" data-open="p-tasks"><svg viewBox="0 0 24 24"><rect x="5" y="4" width="14" height="17" rx="3.5"/><path d="M9 12.5l2.3 2.3 4.2-4.6"/></svg>Görevler</button>
+      <button class="mi" role="menuitem" data-open="p-ref"><svg viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3"/><path d="M3.5 19c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M16 5.8a3 3 0 0 1 0 5.4M17.5 14.3c2 .7 3 2.2 3 4.7"/></svg>Davet</button>
       <button class="mi" role="menuitem" data-open="p-rank"><svg viewBox="0 0 24 24"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6.5H5.5A2.5 2.5 0 0 0 8 10M16 6.5h2.5A2.5 2.5 0 0 1 16 10"/><path d="M12 13v4M9 20h6M10 17h4"/></svg>Sıralama</button>
     </div>
   </div>
@@ -116,9 +121,21 @@ p, h1, h2 { margin:0; }
     <p id="tBody">Görevler çok yakında burada olacak.</p>
     <button class="btn" data-close>Tamam</button>
   </div>
+  <div class="panel" id="p-ref" hidden>
+    <h2>Davet</h2>
+    <p id="rfTxt"></p>
+    <div class="rfs"><div><b id="rfN">0</b><span>davet</span></div><div><b id="rfE">0</b><span>kazandığın coin</span></div></div>
+    <label for="rfLink">Davet bağlantın</label>
+    <input id="rfLink" type="text" readonly>
+    <button class="btn" id="rfShare">Telegram'da gönder</button>
+    <button class="btn ghost" id="rfCopy">Bağlantıyı kopyala</button>
+    <div class="pn" id="rfNote"></div>
+    <button class="btn ghost" data-close>Kapat</button>
+  </div>
   <div class="panel" id="p-rank" hidden>
     <h2>Sıralama</h2>
-    <p id="rBody">Sıralama çok yakında burada olacak.</p>
+    <p>En çok coin toplayan ilk 10 oyuncu.</p>
+    <div id="rBody"></div>
     <button class="btn" data-close>Tamam</button>
   </div>
   <div class="panel" id="p-help" hidden>
@@ -323,6 +340,7 @@ if (v.flash > 0) { c.fillStyle = "rgba(255,255,255," + v.flash + ")"; c.fillRect
 return { draw: draw };
 })();
 </script>
-<script src="cv.js?v=2"></script>
+<script src="cv.js?v=3"></script>
 </body>
-</html>
+      </html>
+      
