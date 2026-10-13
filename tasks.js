@@ -1,4 +1,4 @@
-/* MC Token görevler v1: oyunun ana kodundan ayrı çalışır; yüklenmezse oyun aynen devam eder. */
+/* MC Token görevler v2: oyunun ana kodundan ayrı çalışır; yüklenmezse oyun aynen devam eder. */
 (function () {
   if (window.__mcTasks) return;
   if (typeof sync !== "function" || typeof apply !== "function" || typeof info !== "function" || !document.getElementById("daily")) return;
@@ -6,8 +6,10 @@
 
   var DEFS = [
     { id: "sk", title: "Saat Kasası'nı başlat", desc: "Saat Kasası oyununu bir kez aç, sonra buraya dönüp ödülü al.", open: "Oyunu aç", fail: "Saat Kasası henüz açılmamış görünüyor. Oyunu açıp geri gel, sonra tekrar dene.", url: function () { return "https://t.me/SaatKasasiBot/saat"; } },
+    { id: "cv", title: "Civciv Uçuşu'nu başlat", desc: "Civciv Uçuşu oyununu bir kez aç, sonra buraya dönüp ödülü al.", open: "Oyunu aç", fail: "Civciv Uçuşu henüz açılmamış görünüyor. Oyunu açıp geri gel, sonra tekrar dene.", url: function () { return "https://t.me/CivcivUcusuBot/oyna"; } },
     { id: "chmc", title: "MC Token kanalına katıl", desc: "Duyuruların yayınlandığı MC Token kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala katıldığın görünmüyor. Katılıp tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } },
-    { id: "chsk", title: "Saat Kasası kanalına katıl", desc: "Saat Kasası duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala katıldığın görünmüyor. Katılıp tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } }
+    { id: "chsk", title: "Saat Kasası kanalına katıl", desc: "Saat Kasası duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala katıldığın görünmüyor. Katılıp tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } },
+    { id: "chcv", title: "Civciv Uçuşu kanalına katıl", desc: "Civciv Uçuşu duyuru kanalına katıl, sonra buraya dönüp ödülü al.", open: "Kanalı aç", fail: "Kanala katıldığın görünmüyor. Katılıp tekrar dene.", url: function (t) { return "https://t.me/" + t.ch.slice(1); } }
   ];
   var TRES = {
     done: "Bu görevi zaten tamamladın.",
@@ -32,12 +34,12 @@
 
   var h2 = document.querySelector("#daily h2"); if (h2) h2.textContent = "Görevler";
   var lb = document.querySelector("#dailyBtn span"); if (lb) lb.textContent = "Görevler";
-  var ver = document.getElementById("ver"); if (ver) ver.textContent = "v10.3 lüks";
+  var ver = document.getElementById("ver"); if (ver) ver.textContent = "v10.4 lüks";
   var helpCard = document.querySelector("#help .card");
   if (helpCard) {
     var hp = document.createElement("p"), hb = document.createElement("b");
     hb.textContent = "Görevler:"; hp.appendChild(hb);
-    hp.appendChild(document.createTextNode(" Saat Kasası'nı başlat ve duyuru kanallarına katıl. Her görev yalnızca bir kez MC Token kazandırır."));
+    hp.appendChild(document.createTextNode(" Saat Kasası'nı ve Civciv Uçuşu'nu başlat, duyuru kanallarına katıl. Her görev yalnızca bir kez MC Token kazandırır."));
     var anchor = null;
     Array.prototype.forEach.call(helpCard.querySelectorAll("p"), function (p) { if (/Günlük bonus/.test(p.textContent)) anchor = p; });
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(hp, anchor.nextSibling); else helpCard.appendChild(hp);
@@ -54,7 +56,7 @@
   function list() {
     var out = [];
     if (!TK) return out;
-    DEFS.forEach(function (d) { var t = TK[d.id]; if (!t) return; if (d.id !== "sk" && !t.ch) return; out.push({ d: d, t: t }); });
+    DEFS.forEach(function (d) { var t = TK[d.id]; if (!t) return; if (d.id !== "sk" && d.id !== "cv" && !t.ch) return; out.push({ d: d, t: t }); });
     return out;
   }
   function pending() { return list().some(function (x) { return !x.t.done; }); }
@@ -123,4 +125,3 @@
   }, 400);
   info();
 })();
-    
