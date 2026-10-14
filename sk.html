@@ -528,7 +528,7 @@
   else {
     call({ action: "open" }).then(apply).then(function () {
       var f = adFn();
-      if (f) { try { var pr = f({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 3, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
+      if (f) { try { var pr = f({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 0, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {} }
     }).catch(function () { $("sub").textContent = "Bağlantı kurulamadı. Uygulamayı kapatıp yeniden aç."; $("mainBtn").textContent = "Bağlantı yok"; });
   }
 })();
