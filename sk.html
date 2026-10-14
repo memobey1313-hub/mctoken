@@ -80,6 +80,7 @@
   .row { display:flex; gap:8px; margin-top:8px; }
   .row .go { margin-top:0; width:auto; padding:0 18px; }
   .fine { color:var(--muted); font-size:13px; line-height:1.45; margin-top:6px; }
+  .guide { display:block; width:100%; min-height:46px; margin-top:4px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--text); font:600 15px var(--disp); }
   .pn { min-height:18px; font-size:13px; color:var(--warn); margin-top:8px; }
   .hist { margin-top:6px; }
   .task .rw { color:var(--money); font:600 13px var(--sans); margin-top:4px; }
@@ -168,6 +169,7 @@
     <p><b>3.</b> Günde birkaç kez girmen yeter. Uygulama açılırken bir giriş reklamı gösterilir.</p>
     <p class="m">Gösterilen reklamların gelirinin yarısı sana yazılır. Bu pay ortalama reklam gelirine göre hesaplanır ve zamanla değişebilir. Seans ödülü şu an <b id="hRew">0.0027</b> USDT.</p>
     <p class="m">Çekim: alt sınır <b id="hMin">0.25</b> USDT, TON ağında USDT olarak. Talepler elle incelenir ve sırayla ödenir; ödemeler reklam gelirinin tahsilatına bağlıdır.</p>
+    <button class="guide" id="guideBtn">Detaylı rehber</button>
   </div>
 </div>
 
@@ -330,6 +332,7 @@
   Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) { b.addEventListener("click", closePanel); });
   $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closePanel(); });
   $("helpBtn").addEventListener("click", function () { if (ready) openPanel("p-help"); });
+  $("guideBtn").addEventListener("click", function () { var u = "https://memobey1313-hub.github.io/mctoken/rehber.html#saat"; try { tg.openLink(u); } catch (e) { window.open(u, "_blank"); } });
   $("tUp").addEventListener("click", function () { if (ready) { pnote("upNote", ""); openPanel("p-up"); } });
   $("tWd").addEventListener("click", function () { if (ready) { pnote("wdNote", ""); $("wdWallet").value = S.wallet || ""; openPanel("p-wd"); } });
   $("tPack").addEventListener("click", function () { if (ready) { pnote("pkNote", ""); openPanel("p-pack"); } });
@@ -532,4 +535,5 @@
 </script>
 </body>
 </html>
+
   
