@@ -332,7 +332,7 @@
   Array.prototype.forEach.call(document.querySelectorAll("[data-close]"), function (b) { b.addEventListener("click", closePanel); });
   $("sheet").addEventListener("click", function (e) { if (e.target === $("sheet")) closePanel(); });
   $("helpBtn").addEventListener("click", function () { if (ready) openPanel("p-help"); });
-  $("guideBtn").addEventListener("click", function () { var u = "https://memobey1313-hub.github.io/mctoken/rehber.html#saat"; try { tg.openLink(u); } catch (e) { window.open(u, "_blank"); } });
+  $("guideBtn").addEventListener("click", function () { var u = "https://oyun-rehberi.github.io/#saat"; try { tg.openLink(u); } catch (e) { window.open(u, "_blank"); } });
   $("tUp").addEventListener("click", function () { if (ready) { pnote("upNote", ""); openPanel("p-up"); } });
   $("tWd").addEventListener("click", function () { if (ready) { pnote("wdNote", ""); $("wdWallet").value = S.wallet || ""; openPanel("p-wd"); } });
   $("tPack").addEventListener("click", function () { if (ready) { pnote("pkNote", ""); openPanel("p-pack"); } });
