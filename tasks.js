@@ -1,4 +1,4 @@
-(function(){try{var U="https://memobey1313-hub.github.io/mctoken/rehber.html#mc";var c=document.getElementById("chanBtn");if(!c||document.getElementById("guideBtn"))return;var b=document.createElement("button");b.className="act ghost";b.id="guideBtn";b.style.marginTop="8px";b.textContent="Detaylı rehber";b.addEventListener("click",function(){var t=window.Telegram&&window.Telegram.WebApp;if(t&&t.openLink)t.openLink(U);else window.open(U,"_blank");});c.parentNode.insertBefore(b,c.nextSibling);}catch(e){}})();
+(function(){try{var U="https://oyun-rehberi.github.io/#mc";var c=document.getElementById("chanBtn");if(!c||document.getElementById("guideBtn"))return;var b=document.createElement("button");b.className="act ghost";b.id="guideBtn";b.style.marginTop="8px";b.textContent="Detaylı rehber";b.addEventListener("click",function(){var t=window.Telegram&&window.Telegram.WebApp;if(t&&t.openLink)t.openLink(U);else window.open(U,"_blank");});c.parentNode.insertBefore(b,c.nextSibling);}catch(e){}})();
 /* MC Token görevler v2: oyunun ana kodundan ayrı çalışır; yüklenmezse oyun aynen devam eder. */
 (function () {
   if (window.__mcTasks) return;
@@ -126,3 +126,4 @@
   }, 400);
   info();
 })();
+ 
