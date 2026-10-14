@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bilgi Arenası</title>
+<meta name="theme-color" content="#2b1fd6">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Unbounded:wght@700;800;900&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="ba.css?v=1">
+</head>
+<body>
+<div id="app">
+<div id="boot"><div class="mark">?</div><p id="bootTxt">Sorular hazırlanıyor</p><button class="btn tang sm" id="bootBtn" hidden>Tekrar dene</button></div>
+<header id="top">
+<div class="word"><div class="mark">?</div><span>Bilgi Arenası</span></div>
+<div class="tbtns">
+<button class="ib" id="snd" aria-label="Sesi aç veya kapat"></button>
+<button class="ib" id="help" aria-label="Nasıl oynanır">?</button>
+</div>
+</header>
+<main id="screens">
+<section class="screen on" id="s-home">
+<div class="hero">
+<p class="date" id="hDate"></p>
+<h2>Günün 5 sorusu</h2>
+<div class="pips" id="hPips"></div>
+<div class="cats" id="hCats"></div>
+<button class="btn tang big" id="hGo">Başla</button>
+<p class="hnote" id="hNote"></p>
+</div>
+<div class="stats">
+<div class="st st-fire"><b id="sFire">0</b><span>gün seri</span></div>
+<div class="st st-pts"><b id="sPts">0</b><span>toplam puan</span></div>
+<div class="st st-shield"><b id="sShield">0</b><span>kalkan</span></div>
+</div>
+<p class="line" id="hLine"></p>
+<button class="peek" id="hPeek" hidden></button>
+<button class="joker" id="hJoker" hidden></button>
+</section>
+<section class="screen" id="s-play">
+<div class="phead"><button class="x" id="pExit" aria-label="Çık">✕</button><div class="pno" id="pNo"></div><div class="pval" id="pVal"></div></div>
+<div class="timer" id="timer"><div class="secs" id="fSecs">15</div><div class="fuse"><i id="fFill"></i><b id="fSpark"></b></div></div>
+<div class="qcard"><span class="chip" id="qCat"></span><p id="qText"></p></div>
+<div class="opts" id="qOpts"></div>
+<div class="reveal" id="qRev" hidden>
+<p class="gain" id="qGain"></p>
+<p class="info" id="qInfo"></p>
+<div class="rbtns"><button class="btn tang" id="qNext">Devam</button><button class="joker sm" id="qJoker" hidden></button></div>
+</div>
+</section>
+<section class="screen" id="s-result">
+<div class="rcard">
+<p class="rl">Bugünkü puanın</p>
+<div class="rbig" id="rBig">0</div>
+<div class="rgrid" id="rGrid"></div>
+<ul class="rbreak" id="rBreak"></ul>
+<p class="rrank" id="rRank"></p>
+<p class="rfire" id="rFire" hidden></p>
+</div>
+<div class="remcard" id="rRem" hidden>
+<p>Yarın hatırlatalım mı? Serin bozulmasın diye sana akşam bir mesaj atarım.</p>
+<div class="rbtns"><button class="btn tang" id="rRemYes">Hatırlat</button><button class="btn" id="rRemNo">Gerek yok</button></div>
+</div>
+<div class="btns2"><button class="btn tang" id="rShare">Meydan oku</button><button class="btn" id="rBoard">Sıralama</button></div>
+<p class="cd">Yeni sorulara <b id="rCd">--:--:--</b></p>
+</section>
+<section class="screen" id="s-board">
+<div class="seg" id="bSeg"><button data-k="day" class="on">Bugün</button><button data-k="week">Bu hafta</button><button data-k="friends">Arkadaşlar</button></div>
+<div class="bl" id="bList"></div>
+</section>
+<section class="screen" id="s-me">
+<div class="mehead"><h2 id="mName">Oyuncu</h2><p id="mSub"></p>
+<div class="mgrid"><div><b id="mPts">0</b><span>puan</span></div><div><b id="mBest">0</b><span>en uzun seri</span></div><div><b id="mDays">0</b><span>oynanan gün</span></div></div>
+</div>
+<button class="sw" id="swSfx" role="switch" aria-checked="true">Ses efektleri<i></i></button>
+<button class="sw" id="swMus" role="switch" aria-checked="true">Müzik<i></i></button>
+<button class="sw" id="swRem" role="switch" aria-checked="false">Günlük hatırlatma<i></i></button>
+<div class="how" id="how"></div>
+<p class="ver">Bilgi Arenası</p>
+</section>
+</main>
+<nav id="nav">
+<button data-s="home" class="on"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Oyna</button>
+<button data-s="board"><svg viewBox="0 0 24 24"><path d="M6 4h12v4a6 6 0 0 1-12 0z"/><path d="M6 6H3v1a3 3 0 0 0 3 3M18 6h3v1a3 3 0 0 1-3 3M12 14v4M8 20h8"/></svg>Sıralama</button>
+<button data-s="me"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Ben</button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="modal" hidden></div>
+</div>
+<script src="ba-conf.js?v=1"></script>
+<script src="ba-audio.js?v=1"></script>
+<script src="ba-lib.js?v=1"></script>
+<script src="ba.js?v=1"></script>
+</body>
+  </html>
+  
