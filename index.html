@@ -367,7 +367,7 @@
     stage.style.display = "none";
   } else {
     sync();
-    try { var f0 = adFn(); if (f0) { var pr = f0({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 3, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } } catch (e0) {}
+    try { var f0 = adFn(); if (f0) { var pr = f0({ type: "inApp", inAppSettings: { frequency: 1, capping: 0.5, interval: 30, timeout: 0, everyPage: true } }); if (pr && pr.catch) pr.catch(function () {}); } } catch (e0) {}
     setInterval(function () { if (!ready || pending > 0) sync(); }, 1500);
     setInterval(function () { if (ready && energy < maxE) { energy = Math.min(maxE, energy + regen * 0.25); render(); } }, 250);
   }
