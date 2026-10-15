@@ -1,2 +1,3 @@
 window.CV_ZONE = "12017502";
 (function(){var U="https://oyun-rehberi.github.io/#civciv";function add(){try{var p=document.getElementById("p-help");if(!p||document.getElementById("guideBtn"))return;var c=p.querySelector("[data-close]");var b=document.createElement("button");b.className="btn ghost";b.id="guideBtn";b.textContent="Detaylı rehber";b.addEventListener("click",function(){var t=window.Telegram&&window.Telegram.WebApp;if(t&&t.openLink)t.openLink(U);else window.open(U,"_blank");});p.insertBefore(b,c);}catch(e){}}add();document.addEventListener("DOMContentLoaded",add);})();
+;(function(){var s=document.createElement("script");s.src="xp.js?v=1";s.async=true;(document.head||document.documentElement).appendChild(s)})();
